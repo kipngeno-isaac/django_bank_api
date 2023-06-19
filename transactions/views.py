@@ -37,7 +37,25 @@ def deposit(request):
         transaction_serializer.save()
         return JsonResponse(transaction_serializer.data, status=status.HTTP_201_CREATED)
     return JsonResponse(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+@api_view(['POST'])
+def withdraw(request):
+    deposit_data = JSONParser().parse(request)
+    # todo: update balance
+    transaction_data = {
+        'user_id': deposit_data['user_id'],
+        'description': "This {} has been withdrawn from you're account".format(deposit_data['amount']),
+        'transaction_type': 'WITHDRAW',
+        'amount': deposit_data['amount'],
+        'balance': 0.0
+    }
+    transaction_serializer = TransactionSerializer(data = transaction_data)
+    if transaction_serializer.is_valid():
+        create_account_entry(transaction_data)
+        transaction_serializer.save()
+        return JsonResponse(transaction_serializer.data, status=status.HTTP_201_CREATED)
+    return JsonResponse(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
 def create_account_entry(transaction):
     # check db for the accounts last transaction
     print(transaction['transaction_type'])
