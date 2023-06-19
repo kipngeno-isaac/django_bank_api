@@ -1,6 +1,5 @@
 from rest_framework import serializers 
 from transactions.models import Transaction
-from transactions.models import Account
  
  
 class TransactionSerializer(serializers.ModelSerializer):
@@ -11,16 +10,5 @@ class TransactionSerializer(serializers.ModelSerializer):
                   'description',
                   'transaction_type',
                   'amount',
+                  'balance',
                   'created')
-
-class AccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = (
-            'id',
-            'user_id',
-            'debit',
-            'credit',
-            'balance',
-            'created'
-        )

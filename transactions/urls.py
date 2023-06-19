@@ -3,5 +3,5 @@ from . import views
  
 urlpatterns = [ 
     url('list', views.index),
-    url('add', views.store),
+    url('deposit', views.deposit),
 ]
