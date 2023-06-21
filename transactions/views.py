@@ -25,10 +25,8 @@ def index(request):
 def deposit(request):
     deposit_data = JSONParser().parse(request)
     user_data = get_user(deposit_data['user_id'])
-    print(user_data.balance)
     balance = user_data.balance
     new_balance = balance + deposit_data['amount']
-    # todo: update balance
     transaction_data = {
         'user_id': deposit_data['user_id'],
         'description': "This {} has been deposited to you're account".format(deposit_data['amount']),
@@ -51,65 +49,69 @@ def deposit(request):
 def withdraw(request):
     deposit_data = JSONParser().parse(request)
     user_data = get_user(deposit_data['user_id'])
-    print(user_data.balance)
     balance = user_data.balance
     new_balance = balance - deposit_data['amount']
-    if balance >= deposit_data['amount']:
-        transaction_data = {
-            'user_id': deposit_data['user_id'],
-            'description': "This {} has been withdrawn from you're account".format(deposit_data['amount']),
-            'transaction_type': 'WITHDRAW',
-            'amount': deposit_data['amount'],
-            'balance': new_balance
-        }
-        transaction_serializer = TransactionSerializer(data = transaction_data)
-        if transaction_serializer.is_valid():
-            with transaction.atomic():
-                transaction_serializer.save()
-                user_data.balance = new_balance
-                user_data.save()
-                print(user_data.balance)
-                return JsonResponse(transaction_serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if deposit_data['amount'] > balance:
+        return JsonResponse("Withdrawal amount exceeds your balance", status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+    transaction_data = {
+        'user_id': deposit_data['user_id'],
+        'description': "This {} has been withdrawn from you're account".format(deposit_data['amount']),
+        'transaction_type': 'WITHDRAW',
+        'amount': deposit_data['amount'],
+        'balance': new_balance
+    }
+    transaction_serializer = TransactionSerializer(data = transaction_data)
+    if transaction_serializer.is_valid():
+        with transaction.atomic():
+            transaction_serializer.save()
+            user_data.balance = new_balance
+            user_data.save()
+            print(user_data.balance)
+            return JsonResponse(transaction_serializer.data, status=status.HTTP_201_CREATED)
+    return JsonResponse(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def transfer(request):
     transfer_data = JSONParser().parse(request)
-    
+    sender = get_user(transfer_data['user_id'])
+    receiver = get_user(transfer_data['receiver_id'])
+    sender_balance = sender.balance
+    if sender_balance < transfer_data['amount']:
+        return JsonResponse("You're transfer amount exceeds your balance", status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+    sender_new_balance = sender_balance - transfer_data['amount']
     user_withdraw_data = {
         'user_id': transfer_data['user_id'],
-        'description': "You have transfered {} to {}".format(transfer_data['amount'], transfer_data['receiver_id']),
+        'description': "You have transfered {} to {}".format(transfer_data['amount'], receiver.name),
         'transaction_type': 'WITHDRAW',
         'amount': transfer_data['amount'],
-        'balance': 0.0
+        'balance': sender_new_balance
     }
-
+    receiver_balance = receiver.balance
+    receiver_new_balance = receiver_balance + transfer_data['amount']
     receiver_deposit_data = {
         'user_id': transfer_data['receiver_id'],
         'description': "You have received {} from {}".format(transfer_data['amount'], transfer_data['user_id']),
         'transaction_type': 'DEPOSIT',
         'amount': transfer_data['amount'],
-        'balance': 0.0
+        'balance': receiver_new_balance
     }
 
     with transaction.atomic():
         sender_data = TransactionSerializer(data=user_withdraw_data)
         if sender_data.is_valid():
             sender_data.save()
+            sender.balance = sender_new_balance
+            sender.save()
         receiver_data = TransactionSerializer(data=receiver_deposit_data)
         if receiver_data.is_valid():
             receiver_data.save()
+            receiver.balance = receiver_new_balance
+            receiver.save()
         
         return JsonResponse(sender_data.data, status=status.HTTP_201_CREATED)
-
-
-def create_new_transaction():
-    # use request details to update and create new transaction
-    pass
-
-def get_balance(user_id):
-    transaction = Transaction.objects.filter(user_id=user_id)
-    return transaction.latest('created')
 
 def get_user(user_id):
     return User.objects.get(pk=user_id)
