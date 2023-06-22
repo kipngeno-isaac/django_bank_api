@@ -20,6 +20,16 @@ def index(request):
     transactions_serializer = TransactionSerializer(transactions, many=True)
     return JsonResponse(transactions_serializer.data, safe=False)
 
+@api_view(['GET'])
+def get_transactions(request, user_id):
+
+    transactions = Transaction.objects.filter(user_id = user_id)
+    account_number = request.GET.get('account_number', None)
+    if account_number is not None:
+        transactions = transactions.filter(account_number__icontains=account_number)
+    
+    transactions_serializer = TransactionSerializer(transactions, many=True)
+    return JsonResponse(transactions_serializer.data, safe=False)
 
 @api_view(['POST'])
 def deposit(request):
