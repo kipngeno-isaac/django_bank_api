@@ -13,9 +13,10 @@ from users.models import User
 @api_view(['GET'])
 def index(request):
     transactions = Transaction.objects.all()
-    account_number = request.GET.get('account_number', None)
-    if account_number is not None:
-        transactions = transactions.filter(account_number__icontains=account_number)
+    user_id = request.GET.get('user_id', None)
+    print(user_id)
+    if user_id is not None:
+        transactions = transactions.filter(user_id__icontains=user_id)
     
     transactions_serializer = TransactionSerializer(transactions, many=True)
     return JsonResponse(transactions_serializer.data, safe=False)
@@ -24,10 +25,6 @@ def index(request):
 def get_transactions(request, user_id):
 
     transactions = Transaction.objects.filter(user_id = user_id)
-    account_number = request.GET.get('account_number', None)
-    if account_number is not None:
-        transactions = transactions.filter(account_number__icontains=account_number)
-    
     transactions_serializer = TransactionSerializer(transactions, many=True)
     return JsonResponse(transactions_serializer.data, safe=False)
 
