@@ -6,4 +6,5 @@ class User(models.Model):
     email = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
     balance = models.FloatField(default=0)
+    password = models.CharField(max_length=250, default='')
     created = models.DateTimeField(auto_now_add=True)
