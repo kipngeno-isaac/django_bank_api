@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info: 
+  title: Bank API demo - OpenApi 3.0.3
+  description: This is swagger documentation for the bank api demo based on openapi 3.0.3
+  termsOfService: https://swagger.io/terms/
+  contact: 
+    email: isaac2ngeno5@gmail.com
+  license:
+    name: Apache2
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0 

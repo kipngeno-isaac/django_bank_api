@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM --platform=$BUILDPLATFORM python:3.7-alpine AS builder
 ENV PYTHONUNBUFFERED 1
 RUN mkdir /base_directory
 WORKDIR /base_directory
