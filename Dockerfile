@@ -1,15 +1,27 @@
-FROM --platform=$BUILDPLATFORM python:3.7-alpine AS builder
-ENV PYTHONUNBUFFERED 1
-RUN mkdir /base_directory
-WORKDIR /base_directory
-ADD . /base_directory/
-RUN apt-get update
-RUN apt-get install -y git
-RUN git init
-RUN apt-get install -y gcc python3-dev
-RUN apt-get install -y libxml2-dev libxslt1-dev build-essential python3-lxml zlib1g-dev
-RUN apt-get install -y default-mysql-client default-libmysqlclient-dev
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN  python3 get-pip.py
-RUN rm get-pip.py
-RUN pip install -r requirements.txt
+# Use an official Python runtime as the base image
+FROM python:3.9
+
+# Set the working directory in the container
+WORKDIR /code
+
+# Copy the requirements file to the container
+COPY requirements.txt /code/
+
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project to the container
+COPY . /code/
+
+# Expose the port on which the Django app will run
+EXPOSE 8000
+
+# Set the environment variables
+ENV MYSQL_HOST=mysql
+ENV MYSQL_PORT=3306
+ENV MYSQL_DATABASE=bankapidb
+ENV MYSQL_USER=root
+ENV MYSQL_PASSWORD=54985498
+
+# Start the Django development server
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
