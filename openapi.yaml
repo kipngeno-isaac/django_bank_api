@@ -9,3 +9,16 @@ info:
     name: Apache2
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0 
+servers: 
+  - url: http://localhost:8080
+tags:
+  - name: users
+    description: User details
+  - name: transactions
+    description: Information about user transactions
+paths:
+  /users/list:
+    get:
+      tags:
+        - users
+      summary: List all users in the system
