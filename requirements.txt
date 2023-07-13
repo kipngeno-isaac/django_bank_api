@@ -1,2 +1,11 @@
-Django>=3.0,<4.0
-psycopg2>=2.8
+distlib==0.3.6
+django-cors-headers==4.1.0
+django-filter==23.2
+djangorestframework==3.14.0
+filelock==3.12.1
+Markdown==3.4.3
+pipenv==2023.6.12
+platformdirs==3.5.3
+PyMySQL==1.0.3
+virtualenv==20.23.0
+virtualenv-clone==0.5.7

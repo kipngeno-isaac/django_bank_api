@@ -13,5 +13,3 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: '54985498'
       MYSQL_DATABASE: 'bankapidb'
-      MYSQL_USER: 'root'
-      MYSQL_PASSWORD: '54985498'
