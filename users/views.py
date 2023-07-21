@@ -3,11 +3,11 @@ from django.shortcuts import render
 from django.http.response import JsonResponse
 from rest_framework import status
  
-# from users.models import User
-from users.serializers import UserRegistrationSerializer, UserSerializer
+from users.models import User
+from users.serializers import  UserSerializer
 from rest_framework.decorators import api_view
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from knox.auth import AuthToken
+from rest_framework.exceptions import AuthenticationFailed
+
 # Create your views here.
 # @api_view(['GET'])
 # def user_list(request):
@@ -49,17 +49,11 @@ from knox.auth import AuthToken
 #     return JsonResponse(data)
 
 @api_view(['POST'])
-def login_api(request):
-    serializer = AuthTokenSerializer(data=request.data)
+def register(request):
+    serializer = UserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.validated_data['user']
-
-    _, token = AuthToken.objects.create(user)
-
-    return JsonResponse({
-        'user':user,
-        'token': token
-    }, status=status.HTTP_200_OK)
+    return JsonResponse({'user':user.data}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_user_data(request):
@@ -73,14 +67,17 @@ def get_user_data(request):
     }, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
-def register_api(request):
-    serializer = UserRegistrationSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
+def login(request):
+    email = request.data['email']
+    password = request.data['password']
+    user = User.objects.filter(email=email).first()
 
-    _, token = AuthToken.objects.create(user)
-
+    if user is None:
+        raise AuthenticationFailed('User not found!')
+    
+    if not user.check_password(password):
+        raise AuthenticationFailed('Incorrect login credentials')
+    
     return JsonResponse({
-        'user':user,
-        'token': token
-    }, status=status.HTTP_201_CREATED)
+        'message': 'Login success'
+    }, status=status.HTTP_200_OK)
